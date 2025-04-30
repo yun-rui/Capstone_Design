@@ -27,8 +27,12 @@ export default function InputNewsPage() {
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleSubmit = () => {
-    console.log(newsText);
-    router.push('/SectionPage');
+    // DisplayNewsText.tsx로 전달
+    router.push({
+      pathname: '/DisplayNewsPage',
+      params: {content: newsText},
+    });
+    // console.log(newsText);
   };
 
   const handleContentSizeChange = () => {
