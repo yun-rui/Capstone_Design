@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{ useEffect, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -8,13 +8,22 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
 export default function MyPage() {
   const router = useRouter();
-  const nickname = '홍길동'; // 추후 서버 연동 예정
+  const [nickname, setNickname] = useState('');
+
+  useEffect(() => {
+    const loadNickname = async () => {
+      const saved = await AsyncStorage.getItem('nickname');
+      if (saved) setNickname(saved);
+    };
+    loadNickname();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -36,6 +45,7 @@ export default function MyPage() {
         <Image source={require('../assets/images/front.png')} style={styles.arrowIcon} />
       </TouchableOpacity>
 
+
       {/* 일반 구분선 */}
       <View style={styles.divider} />
 
@@ -45,6 +55,8 @@ export default function MyPage() {
       </TouchableOpacity>
 
       <View style={styles.divider} />
+      <DefaultText style={styles.footer}>© Copyright. 2025 EasyDigest Co., Ltd.</DefaultText>
+      
     </View>
   );
 }
@@ -78,23 +90,24 @@ const styles = StyleSheet.create({
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: screenWidth * 0.09,
+    paddingHorizontal: screenWidth * 0.1,
     paddingVertical: screenHeight * 0.05,
   },
   profileIcon: {
-    width: screenWidth * 0.1,
-    height: screenWidth * 0.1,
-    marginRight: screenWidth * 0.04,
-  },
-  nickname: {
-    fontSize: screenWidth * 0.045,
-    fontFamily: 'Ubuntu-Bold',
-    flex: 1,
+    width: screenWidth * 0.16,
+    height: screenWidth * 0.16,
+    marginRight: screenWidth * 0.1,
   },
   arrowIcon: {
-    width: screenWidth * 0.04,
-    height: screenWidth * 0.04,
+    width: screenWidth * 0.06,
+    height: screenWidth * 0.06,
+    position: 'absolute',
+    right: screenWidth * 0.1,   
   },
+  nickname: {
+    fontSize: screenWidth * 0.07,
+    fontFamily: 'Ubuntu-Bold',
+  }, 
   divider: {
     height: 1,
     backgroundColor: '#ccc',
@@ -102,11 +115,19 @@ const styles = StyleSheet.create({
   },
   recordContainer: {
     paddingHorizontal: screenWidth * 0.09,
-    paddingVertical: screenHeight * 0.03,
+    paddingVertical: screenHeight * 0.05,
   },
   recordText: {
-    fontSize: screenWidth * 0.045,
+    fontSize: screenWidth * 0.07,
     fontFamily: 'Ubuntu-Bold',
     textAlign: 'center',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: screenHeight * 0.06,
+    fontSize: screenWidth * 0.03,
+    color: '#BCBCBC',
+    fontFamily: 'Ubuntu-Regular',
+    right: screenWidth*0.24,
   },
 });

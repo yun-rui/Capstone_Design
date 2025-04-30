@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -42,9 +43,13 @@ export default function LoginPage() {
       const result = await response.json();
 
       if (response.ok) {
+<<<<<<< HEAD
         const { message, nickname, access, refresh } = result;
 
         await AsyncStorage.setItem('access_token', access); // ✅ 이제 안전하게 저장됨
+=======
+        const nickname = result.nickname; // 백에서 받아온 닉네임
+>>>>>>> cb131c495e116a4416ac4ffcd5c6a747e341e4da
         await AsyncStorage.setItem('nickname', nickname); // 저장
         Alert.alert('✅ 로그인 성공', '환영합니다!');
         router.push('/SectionPage');
