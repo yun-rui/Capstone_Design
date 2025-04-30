@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
@@ -6,6 +6,7 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
@@ -15,15 +16,66 @@ const screenWidth = Dimensions.get('window').width;
 
 export default function LoginPage() {
   const router = useRouter();
+  const [idInput, setIdInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+
+  const handleLogin = async () => {
+    if (!idInput || !passwordInput) {
+      Alert.alert('입력 오류', 'ID와 비밀번호를 모두 입력해주세요.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://172.20.10.2:8000/api/users/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: idInput,
+          password: passwordInput,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert('✅ 로그인 성공', '환영합니다!');
+        router.push('/SectionPage');
+      } else {
+        if (result.message === 'User not found') {
+          Alert.alert('❌ 로그인 실패', '존재하지 않는 ID입니다.');
+        } else if (result.message === 'Incorrect password') {
+          Alert.alert('❌ 로그인 실패', '비밀번호를 다시 확인해주세요.');
+        } else {
+          Alert.alert('❌ 로그인 실패', '알 수 없는 오류가 발생했습니다.');
+        }
+      }
+    } catch (error) {
+      console.error('로그인 에러:', error);
+      Alert.alert('서버 오류', '서버에 연결할 수 없습니다.');
+    }
+  };
 
   return (
     <View style={styles.container}>
       <DefaultText style={styles.title}>EasyDigest</DefaultText>
 
-      <TextInput placeholder="ID를 입력하세요" style={styles.input} />
-      <TextInput placeholder="비밀번호를 입력하세요" secureTextEntry style={styles.input} />
+      <TextInput
+        placeholder="ID를 입력하세요"
+        style={styles.input}
+        value={idInput}
+        onChangeText={setIdInput}
+      />
+      <TextInput
+        placeholder="비밀번호를 입력하세요"
+        secureTextEntry
+        style={styles.input}
+        value={passwordInput}
+        onChangeText={setPasswordInput}
+      />
 
-      <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/SectionPage')}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <DefaultText style={styles.loginButtonText}>로그인하기</DefaultText>
       </TouchableOpacity>
 
@@ -54,12 +106,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    padding: screenWidth * 0.07, // 가로 길이의 5% padding
+    padding: screenWidth * 0.07,
     backgroundColor: 'white',
   },
   title: {
     marginTop: screenHeight * 0.2,
-    fontSize: screenWidth * 0.12, 
+    fontSize: screenWidth * 0.12,
     fontFamily: 'KaiseiTokumin-Bold',
     marginBottom: screenHeight * 0.05,
   },

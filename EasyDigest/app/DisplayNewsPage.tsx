@@ -7,7 +7,8 @@ import {
     StyleSheet,
     Pressable, 
     Dimensions,
-    Modal, // 단어 설명을 위한 팝업창 
+    Modal,
+    TextInput, // 단어 설명을 위한 팝업창 
 } from 'react-native';
 import {
     useRouter,
@@ -21,46 +22,55 @@ const screenwidth = Dimensions.get('window').width;
 export default function DisplayNewsPage(){
     const router = useRouter();
     const {content} = useLocalSearchParams(); // InputNews에서 넘겨받은 기사 내용 
+    const article = content as string;
 
     const [selectedWord, setSelectedWord] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [selection, setSelection] = useState({start:0, end:0});
 
-    const handleWordPress = (word: string) => {
-        setSelectedWord(word);
-        setModalVisible(true);
+    const handleSelectionChange = (event: any)=>{
+        const {start, end} = event.nativeEvent.selection;
+        setSelection({start, end});
+
+        if (start !== end) {
+            const word = article.slice(start, end);
+            setSelectedWord(word);
+        }
     };
 
+    const handleLookup = () =>{
+        if (selectedWord.trim()){
+            setModalVisible(true);
+        }
+    };
     const handleComplete = () => {
         // 다음 단계로 넘어가는 로직
         router.push('/SectionPage');
     };
-    
-    // 기사 내용을 공백 포함 분할 (단어 단위로)
-    const words = (content as string)?.split(/(\s+)/);
-    
+        
     return(
         <View style={styles.container}>
-            <ScrollView style={styles.scrollBox}>
-                <Text style={styles.newsText}>
-                    {words.map((word, index) => {
-                        //공백은 그대로 출력
-                        if (word.trim() === '') return word;
-                        return (
-                            <Text
-                            key = {index}
-                            style = {styles.word}
-                            onPress={()=> handleWordPress(word)}
-                            >
-                                {word}
-                            </Text>
-                        );
-                    })}
-                </Text>
-            </ScrollView>
-            
+            {/*상단 고정 버튼*/}
+            <View style={styles.topBar}>
+                <Pressable style={styles.searchButton} onPress={handleLookup}>
+                    <Text style={styles.searchButtonText}>🔍검색</Text>
+                </Pressable>
+            </View>
+            {/*기사 텍스트 입력창*/}
+                <TextInput
+                    style={styles.textInput}
+                    multiline
+                    editable={false}
+                    value = {article}
+                    onSelectionChange={handleSelectionChange}
+                    selection={selection}
+                    textAlignVertical = "top"
+                />
+
             <Text style={styles.tipText}>
-                모르는 단어를 클릭해 쉬운 설명을 확인해보세요 ! 
+                모르는 단어를 드래그해 오른쪽 위 '🔍검색'을 눌러보세요 ! 
             </Text>
+            <View style={styles.underline}/>
 
             <Pressable style={styles.button} onPress={handleComplete}>
                 <DefaultText style={styles.buttonText}>완료</DefaultText>
@@ -70,13 +80,13 @@ export default function DisplayNewsPage(){
             <Modal
                 visible={modalVisible}
                 transparent
-                antimationType="fade"
+                animationType="fade"
                 onRequestClose={()=>setModalVisible(false)}
                 >
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalBox}>
                             <Text style={styles.modalTitle}>{selectedWord}</Text>
-                            <Text style={styles.modalDescription}>이 단어에 대한 설명을 적울 예정</Text>
+                            <Text style={styles.modalDescription}>이 단어에 대한 설명을 적을 예정</Text>
                             <Pressable onPress={()=> setModalVisible(false)} style={styles.modalButton}>
                                 <Text style={styles.modalButtonText}>닫기</Text>
                             </Pressable>
@@ -90,29 +100,49 @@ export default function DisplayNewsPage(){
 const styles= StyleSheet.create({
     container: {
         flex:1, 
-        padding: screenwidth*0.07,
+        padding: screenwidth*0.05,
         backgroundColor: 'white',
     },
-    scrollBox: {
+    topBar: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: screenHeight*0.06,
+        marginBottom: screenHeight*0.015,
+    },
+    searchButton:{
+        backgroundColor: '#1976d2',
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        borderRadius: 20,
+    },
+    searchButtonText:{
+        color: 'white',
+        fontSize: screenwidth*0.035,
+        fontFamily: 'Ubuntu-Bold',
+    },
+    textInput: {
         flex:1,
+        minHeight: screenHeight*0.35,
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 10,
         padding: screenwidth*0.04,
-        marginBottom: screenHeight*0.03,
-    },
-    newsText: {
         fontSize: screenwidth*0.04,
         fontFamily: 'Ubuntu-Light',
         color: '#333',
     },
-    word:{
-        color: '#333',
+    underline:{
+        height:2,
+        width: '90%',
+        backgroundColor: '#1976d2',
+        alignSelf: 'center',
+        marginBottom: screenHeight*0.025,
     },
     tipText:{
         fontSize: screenwidth*0.035,
         color: '#666',
-        marginBottom: screenHeight*0.015,
+        marginTop: screenHeight*0.02,
+        marginBottom: 0,
         textAlign:'center',
     },
     button:{
