@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -26,7 +27,7 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await fetch('http://172.20.10.2:8000/api/users/login/', {
+      const response = await fetch('http://192.168.35.109:8000/api/users/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,11 +36,16 @@ export default function LoginPage() {
           username: idInput,
           password: passwordInput,
         }),
+        credentials: 'include', 
       });
 
       const result = await response.json();
 
       if (response.ok) {
+        const { message, nickname, access, refresh } = result;
+
+        await AsyncStorage.setItem('access_token', access); // ✅ 이제 안전하게 저장됨
+        await AsyncStorage.setItem('nickname', nickname); // 저장
         Alert.alert('✅ 로그인 성공', '환영합니다!');
         router.push('/SectionPage');
       } else {

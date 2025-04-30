@@ -27,7 +27,7 @@ export default function SignUpPage() {
     }
   
     try {
-      const response = await fetch('http://172.20.10.2:8000/api/users/signup/', {
+      const response = await fetch('http://192.168.35.109:8000/api/users/signup/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +40,6 @@ export default function SignUpPage() {
           interest: interestInput,
         }),
       });
-  
       const contentType = response.headers.get('content-type');
   
       if (!contentType || !contentType.includes('application/json')) {
@@ -51,7 +50,7 @@ export default function SignUpPage() {
       }
   
       const result = await response.json();
-  
+
       if (response.ok) {
         Alert.alert('회원가입 완료!');
         router.push('/LoginPage');
@@ -71,7 +70,7 @@ export default function SignUpPage() {
     }
   
     try {
-      const response = await fetch(`http://172.20.10.2:8000/api/users/check-username/?username=${idInput}`, {
+      const response = await fetch(`http://192.168.35.109:8000/api/users/check-username/?username=${idInput}`, {
         method: 'GET',
       });
   

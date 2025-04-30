@@ -19,7 +19,7 @@ export default function SectionPage() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://172.20.10.2:8000/api/users/logout/', {
+      const response = await fetch('http://192.168.35.109:8000/api/users/logout/', {
         method: 'POST',
         credentials: 'include', // 세션 쿠키 유지용 (필요 시)
       });

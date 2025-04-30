@@ -11,10 +11,12 @@ import {
     KeyboardAvoidingView,
     Keyboard,
     TouchableWithoutFeedback, 
+    Alert,
   } from 'react-native';
   
 import { useRouter } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // 상단에 추가
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -26,13 +28,47 @@ export default function InputNewsPage() {
   // ScrollView에 대한 ref
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleSubmit = () => {
-    // DisplayNewsText.tsx로 전달
-    router.push({
+  const handleSubmit = async () => {
+    console.log("🟡 handleSubmit 진입");
+
+    // post 요청 
+    try {
+      const token = await AsyncStorage.getItem('access_token'); // 토큰 불러오기
+      
+      if (!token){
+        Alert.alert('로그인 필요','로그인 정보가 없습니다.');
+        return;
+      }
+
+      const response = await fetch('http://192.168.35.109:8000/api/articles/',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // ✅ 토큰 포함
+          // 로그인 기능과 연동했다면 아래 Authorization도 포함
+          // 'Authorization': 'Bearer ${your_access_token}',
+        },
+        body: JSON.stringify({
+          content: newsText,
+        }),
+        credentials: 'include', 
+      });
+      
+      if (!response.ok) {
+        throw new Error ('Failed to save article');
+      }
+
+      const data = await response.json();
+      console.log('Article saved:',data);
+
+      // DisplayNewsText.tsx로 전달
+      router.push({
       pathname: '/DisplayNewsPage',
       params: {content: newsText},
-    });
-    // console.log(newsText);
+      });
+      }catch(error){
+        console.error('Error saving article:',error);
+    }
   };
 
   const handleContentSizeChange = () => {
@@ -51,7 +87,7 @@ export default function InputNewsPage() {
         >
         <View style={styles.container}>
             {/* 뒤로가기 버튼 */}
-            <Pressable onPress={() => router.push('/')}>
+            <Pressable onPress={() => router.push('/SectionPage')}>
             <Image
                 source={require('../assets/images/back.png')}
                 style={styles.topLeftIcon}
