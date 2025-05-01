@@ -40,7 +40,7 @@ export default function InputNewsPage() {
         return;
       }
 
-      const response = await fetch('http://192.168.35.109:8000/api/articles/',{
+      const response = await fetch('http://172.20.10.2:8000/api/articles/',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -27,7 +27,7 @@ export default function SignUpPage() {
     }
   
     try {
-      const response = await fetch('http://192.168.35.109:8000/api/users/signup/', {
+      const response = await fetch('http://172.20.10.2:8000/api/users/signup/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,29 +40,29 @@ export default function SignUpPage() {
           interest: interestInput,
         }),
       });
-      const contentType = response.headers.get('content-type');
   
+      const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
-        console.log('서버 응답이 JSON이 아님:', text); // HTML 오류일 경우 여기에 찍힘
-        Alert.alert('서버 오류', 'JSON이 아닌 응답이 도착했습니다.');
+        console.log('서버 응답이 JSON이 아님:', text);
+        Alert.alert('서버 오류', '예상치 못한 응답 형식입니다.');
         return;
       }
   
       const result = await response.json();
-
-      if (response.ok) {
-        Alert.alert('회원가입 완료!');
-        router.push('/LoginPage');
-      } else {
-        Alert.alert('회원가입 실패', result.error || '내용을 입력해주세요');
-      }
   
+      if (response.ok) {
+        Alert.alert('🎉 회원가입 완료', '이제 로그인해주세요!');
+        router.push('/LoginPage'); // ✅ 자동 로그인 없이 이동만
+      } else {
+        Alert.alert('회원가입 실패', result.message || '입력값을 확인해주세요.');
+      }
     } catch (error) {
-      Alert.alert('서버 연결 실패', '서버가 켜져 있는지 확인하세요.');
       console.error('Fetch 에러:', error);
+      Alert.alert('서버 연결 실패', '서버가 켜져 있는지 확인해주세요.');
     }
   };
+  
   const handleCheckDuplicate = async () => {
     if (!idInput) {
       Alert.alert('아이디를 입력하세요.');
@@ -70,7 +70,7 @@ export default function SignUpPage() {
     }
   
     try {
-      const response = await fetch(`http://192.168.35.109:8000/api/users/check-username/?username=${idInput}`, {
+      const response = await fetch(`http://172.20.10.2:8000/api/users/check-username/?username=${idInput}`, {
         method: 'GET',
       });
   

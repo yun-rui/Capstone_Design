@@ -5,6 +5,7 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
@@ -20,10 +21,17 @@ export default function MyPage() {
   useEffect(() => {
     const loadNickname = async () => {
       const saved = await AsyncStorage.getItem('nickname');
-      if (saved) setNickname(saved);
+      if (saved) {
+        setNickname(saved);
+      } else {
+        Alert.alert('로그인이 필요합니다.', '', [
+          { text: '확인', onPress: () => router.replace('/LoginPage') },
+        ]);
+      }
     };
     loadNickname();
   }, []);
+  
 
   return (
     <View style={styles.container}>

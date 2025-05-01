@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
@@ -26,9 +28,9 @@ export default function LoginPage() {
       Alert.alert('입력 오류', 'ID와 비밀번호를 모두 입력해주세요.');
       return;
     }
-
+  
     try {
-      const response = await fetch('http://192.168.35.109:8000/api/users/login/', {
+      const response = await fetch('http://172.20.10.2:8000/api/users/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,23 +39,23 @@ export default function LoginPage() {
           username: idInput,
           password: passwordInput,
         }),
-        credentials: 'include', 
+        credentials: 'include',
       });
-
+  
       const result = await response.json();
-
+  
       if (response.ok) {
-<<<<<<< HEAD
         const { message, nickname, access, refresh } = result;
-
-        await AsyncStorage.setItem('access_token', access); // ✅ 이제 안전하게 저장됨
-=======
-        const nickname = result.nickname; // 백에서 받아온 닉네임
->>>>>>> cb131c495e116a4416ac4ffcd5c6a747e341e4da
-        await AsyncStorage.setItem('nickname', nickname); // 저장
-        Alert.alert('✅ 로그인 성공', '환영합니다!');
+  
+        // ✅ JWT 토큰과 닉네임 저장
+        await AsyncStorage.setItem('access_token', access);
+        await AsyncStorage.setItem('refresh_token', refresh);
+        await AsyncStorage.setItem('nickname', nickname);
+  
+        Alert.alert('✅ 로그인 성공', `${nickname}님 환영합니다!`);
         router.push('/SectionPage');
       } else {
+        // 실패한 이유에 따라 알림 표시
         if (result.message === 'User not found') {
           Alert.alert('❌ 로그인 실패', '존재하지 않는 ID입니다.');
         } else if (result.message === 'Incorrect password') {
@@ -67,49 +69,53 @@ export default function LoginPage() {
       Alert.alert('서버 오류', '서버에 연결할 수 없습니다.');
     }
   };
+  
 
   return (
-    <View style={styles.container}>
-      <DefaultText style={styles.title}>EasyDigest</DefaultText>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <DefaultText style={styles.title}>EasyDigest</DefaultText>
 
-      <TextInput
-        placeholder="ID를 입력하세요"
-        style={styles.input}
-        value={idInput}
-        onChangeText={setIdInput}
-      />
-      <TextInput
-        placeholder="비밀번호를 입력하세요"
-        secureTextEntry
-        style={styles.input}
-        value={passwordInput}
-        onChangeText={setPasswordInput}
-      />
+        <TextInput
+          placeholder="ID를 입력하세요"
+          style={styles.input}
+          value={idInput}
+          onChangeText={setIdInput}
+        />
+        <TextInput
+          placeholder="비밀번호를 입력하세요"
+          secureTextEntry
+          style={styles.input}
+          value={passwordInput}
+          onChangeText={setPasswordInput}
+        />
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <DefaultText style={styles.loginButtonText}>로그인하기</DefaultText>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.push('/SignUpPage')}>
-        <DefaultText style={styles.signupText}>
-          아직 계정이 없다면? <DefaultText style={styles.signupLink}>회원가입하기</DefaultText>
-        </DefaultText>
-      </TouchableOpacity>
-
-      <View style={styles.socialLogin}>
-        <TouchableOpacity style={[styles.socialButton, styles.kakaoButton]}>
-          <Image source={require('../assets/images/kakao_logo.png')} style={styles.socialIcon} />
-          <DefaultText style={styles.kakaoText}>카카오 로그인</DefaultText>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <DefaultText style={styles.loginButtonText}>로그인하기</DefaultText>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.socialButton, styles.naverButton]}>
-          <Image source={require('../assets/images/naver_logo.png')} style={styles.socialIcon} />
-          <DefaultText style={styles.naverText}>네이버 로그인</DefaultText>
+        <TouchableOpacity onPress={() => router.push('/SignUpPage')}>
+          <DefaultText style={styles.signupText}>
+            아직 계정이 없다면?{' '}
+            <DefaultText style={styles.signupLink}>회원가입하기</DefaultText>
+          </DefaultText>
         </TouchableOpacity>
+
+        <View style={styles.socialLogin}>
+          <TouchableOpacity style={[styles.socialButton, styles.kakaoButton]}>
+            <Image source={require('../assets/images/kakao_logo.png')} style={styles.socialIcon} />
+            <DefaultText style={styles.kakaoText}>카카오 로그인</DefaultText>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.socialButton, styles.naverButton]}>
+            <Image source={require('../assets/images/naver_logo.png')} style={styles.socialIcon} />
+            <DefaultText style={styles.naverText}>네이버 로그인</DefaultText>
+          </TouchableOpacity>
+        </View>
+
+        <DefaultText style={styles.footer}>© Copyright. 2025 EasyDigest Co., Ltd.</DefaultText>
       </View>
-
-      <DefaultText style={styles.footer}>© Copyright. 2025 EasyDigest Co., Ltd.</DefaultText>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

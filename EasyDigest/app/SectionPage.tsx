@@ -13,28 +13,24 @@ import { useRouter } from 'expo-router';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function SectionPage() {
   const router = useRouter();
 
+  
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://192.168.35.109:8000/api/users/logout/', {
-        method: 'POST',
-        credentials: 'include', // 세션 쿠키 유지용 (필요 시)
-      });
+      await AsyncStorage.removeItem('access_token');
+      await AsyncStorage.removeItem('refresh_token');
+      await AsyncStorage.removeItem('nickname');
 
-      const result = await response.json();
-
-      if (response.ok) {
-        Alert.alert('로그아웃', '로그아웃 되었습니다.');
-        router.push('/LoginPage');
-      } else {
-        Alert.alert('실패', result.message || '로그아웃 실패');
-      }
+      Alert.alert('로그아웃', '로그아웃 되었습니다.');
+      router.replace('/LoginPage');
     } catch (error) {
       console.error('로그아웃 오류:', error);
-      Alert.alert('서버 오류', '로그아웃 중 오류 발생');
+      Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
     }
   };
 
