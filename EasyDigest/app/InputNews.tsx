@@ -40,7 +40,7 @@ export default function InputNewsPage() {
         return;
       }
 
-      const response = await fetch('http://172.20.10.2:8000/api/articles/',{
+      const response = await fetch('http://192.168.35.109:8000/api/articles/',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export default function InputNewsPage() {
           // 'Authorization': 'Bearer ${your_access_token}',
         },
         body: JSON.stringify({
-          content: newsText,
+          url: newsText,
         }),
         credentials: 'include', 
       });
@@ -64,7 +64,10 @@ export default function InputNewsPage() {
       // DisplayNewsText.tsx로 전달
       router.push({
       pathname: '/DisplayNewsPage',
-      params: {content: newsText},
+      params: {
+        content: data.content,
+        article_id:data.id.toString(),
+      },
       });
       }catch(error){
         console.error('Error saving article:',error);
@@ -96,31 +99,18 @@ export default function InputNewsPage() {
 
             {/* 타이틀 */}
             <DefaultText style={styles.title}>
-            학습할 기사의 원문을 입력하세요
+            네이버 뉴스 링크를 입력하세요
             </DefaultText>
 
-            {/* 입력창 (스크롤 가능, 자동 스크롤 포함) */}
-            <View style={styles.inputWrapper}>
-            <ScrollView
-                ref={scrollViewRef}
-                style={styles.scrollArea}
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
-                keyboardShouldPersistTaps="handled"
-                keyboardDismissMode="interactive"
-            >
-                <TextInput
-                style={styles.inputBox}
-                placeholder="여기에 기사를 입력하세요"
-                placeholderTextColor="#aaa"
-                multiline
-                value={newsText}
-                onChangeText={setNewsText}
-                onContentSizeChange={handleContentSizeChange}
-                textAlignVertical="top"
-                scrollEnabled={false} // 스크롤은 ScrollView가 담당
-                />
-            </ScrollView>
-            </View>
+            {/*뉴스 링크 입력 칸*/}
+            <TextInput
+              style={styles.inputBox}
+              placeholder="https://n.news.naver.com/..."
+              placeholderTextColor="#aaa"
+              value={newsText}
+              onChangeText={setNewsText}
+              autoCapitalize="none"
+            />
 
             {/* 제출 버튼 */}
             <Pressable onPress={handleSubmit} style={styles.button}>
