@@ -27,7 +27,7 @@ export default function SignUpPage() {
     }
   
     try {
-      const response = await fetch('http://172.20.10.2:8000/api/users/signup/', {
+      const response = await fetch('http://192.168.35.109:8000/api/users/signup/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default function SignUpPage() {
     }
   
     try {
-      const response = await fetch(`http://172.20.10.2:8000/api/users/check-username/?username=${idInput}`, {
+      const response = await fetch(`http://192.168.35.109:8000/api/users/check-username/?username=${idInput}`, {
         method: 'GET',
       });
   

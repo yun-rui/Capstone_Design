@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'; // 상단에 추가
+
 // React 17 이상부터는 import할 필요 없음 
 import React, {useState} from 'react'; 
 import {
@@ -21,28 +23,58 @@ const screenwidth = Dimensions.get('window').width;
 
 export default function DisplayNewsPage(){
     const router = useRouter();
-    const {content} = useLocalSearchParams(); // InputNews에서 넘겨받은 기사 내용 
+    const {content, article_id} = useLocalSearchParams(); // InputNews에서 넘겨받은 기사 내용 
     const article = content as string;
+    const articleID = Number(article_id);
 
     const [selectedWord, setSelectedWord] = useState('');
+    const [wordDefinition, setWordDefinition] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [selection, setSelection] = useState({start:0, end:0});
-
+    const [askCount, setAskCount] = useState<number | null>(null);
+    
     const handleSelectionChange = (event: any)=>{
         const {start, end} = event.nativeEvent.selection;
+        const word = article.slice(start, end);
         setSelection({start, end});
-
-        if (start !== end) {
-            const word = article.slice(start, end);
-            setSelectedWord(word);
-        }
+        setSelectedWord(word);
+        console.log("선택된 단어:", word);
     };
 
-    const handleLookup = () =>{
-        if (selectedWord.trim()){
-            setModalVisible(true);
-        }
+    const handleLookup = async () =>{
+        console.log('🟡 handleLookup 진입');
+        if (!selectedWord || !articleID) return;
+
+        try{
+            const token = await AsyncStorage.getItem('access_token');
+            const response = await fetch('http://192.168.35.109:8000/api/words/learn/',{
+                method: 'POST',
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // ✅ 토큰 포함
+                },
+                body: JSON.stringify({
+                    word_text: selectedWord,
+                    article_id: articleID,
+                }),
+            });    
+
+    if (response.ok){
+        const data = await response.json();
+        console.log('백엔드 응답답:',data);
+        setWordDefinition(data.description || '설명을 찾을 수 없습니다.');
+        setAskCount(data.ask_count); // 횟수 저장 
+    } else {
+        setWordDefinition('해당 단어에 대한 설명을 가져오지 못했습니다.');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setWordDefinition('오류가 발생했습니다.');
+    }
+
+    setModalVisible(true);
     };
+
     const handleComplete = () => {
         // 다음 단계로 넘어가는 로직
         router.push('/SectionPage');
@@ -86,7 +118,13 @@ export default function DisplayNewsPage(){
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalBox}>
                             <Text style={styles.modalTitle}>{selectedWord}</Text>
-                            <Text style={styles.modalDescription}>이 단어에 대한 설명을 적을 예정</Text>
+                            <Text style={styles.modalDescription}>{wordDefinition}</Text>
+                            {askCount !== null && askCount >= 2 && (
+                                <Text style={styles.button.askCountText}>
+                                    지금까지 {askCount}번 확인했어요!{'\n'}슬슬 익숙해지셨죠?
+                                </Text>
+                            )}
+
                             <Pressable onPress={()=> setModalVisible(false)} style={styles.modalButton}>
                                 <Text style={styles.modalButtonText}>닫기</Text>
                             </Pressable>
@@ -185,5 +223,12 @@ const styles= StyleSheet.create({
         color: '#1976d2',
         fontSize: screenwidth*0.04,
         fontFamily: 'Ubuntu-Bold',
+    },
+    askCountText: {
+        fontSize: screenwidth*0.035,
+        fontFamily: 'Ubuntu-Regular',
+        color: '#444',
+        textAlign: 'center',
+        marginTop: 10,
     },
 });
