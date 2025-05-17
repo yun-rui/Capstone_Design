@@ -12,6 +12,7 @@ import {
     Keyboard,
     TouchableWithoutFeedback, 
     Alert,
+    Text,
   } from 'react-native';
   
 import { useRouter } from 'expo-router';
@@ -34,13 +35,14 @@ export default function InputNewsPage() {
     // post 요청 
     try {
       const token = await AsyncStorage.getItem('access_token'); // 토큰 불러오기
+      console.log("🧾 토큰:", token); // <- 이거 꼭 추가해봐
       
       if (!token){
         Alert.alert('로그인 필요','로그인 정보가 없습니다.');
         return;
       }
 
-      const response = await fetch('http://192.168.35.109:8000/api/articles/',{
+      const response = await fetch('http://172.20.10.2:8000/api/articles/',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +118,10 @@ export default function InputNewsPage() {
             <Pressable onPress={handleSubmit} style={styles.button}>
             <DefaultText style={styles.buttonText}>입력하기</DefaultText>
             </Pressable>
+          
+            
         </View>
+        <Text style={styles.footer}>© Copyright. 2025 EasyDigest Co., Ltd.</Text>
         </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
@@ -139,7 +144,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: screenWidth * 0.063,
     fontFamily: 'Ubuntu-Bold',
-    marginTop: screenHeight * 0.12,
+    marginTop: screenHeight * 0.20,
     marginBottom: screenHeight * 0.03,
     textAlign: 'center',
   },
@@ -174,5 +179,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: screenWidth * 0.045,
     fontFamily: 'Ubuntu-Bold',
+  },
+    footer: {
+    position: 'absolute',
+    bottom: screenHeight * 0.06,
+    fontSize: screenWidth * 0.03,
+    color: '#BCBCBC',
+    fontFamily: 'Ubuntu-Regular',
+    marginLeft: screenWidth*0.24,
   },
 });

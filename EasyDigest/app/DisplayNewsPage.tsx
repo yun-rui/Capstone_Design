@@ -47,7 +47,7 @@ export default function DisplayNewsPage(){
 
         try{
             const token = await AsyncStorage.getItem('access_token');
-            const response = await fetch('http://192.168.35.109:8000/api/words/learn/',{
+            const response = await fetch('http://172.20.10.2:8000/api/words/learn/',{
                 method: 'POST',
                 headers:{
                     'Content-Type': 'application/json',
@@ -77,7 +77,11 @@ export default function DisplayNewsPage(){
 
     const handleComplete = () => {
         // 다음 단계로 넘어가는 로직
-        router.push('/SectionPage');
+        router.push({
+        pathname: '/QuizPage',
+        params: { article_id: articleID.toString() }, 
+});
+
     };
         
     return(
@@ -118,9 +122,12 @@ export default function DisplayNewsPage(){
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalBox}>
                             <Text style={styles.modalTitle}>{selectedWord}</Text>
-                            <Text style={styles.modalDescription}>{wordDefinition}</Text>
+                            {/* ✅ wordDefinition을 스크롤 가능하게 */}
+                            <ScrollView style={styles.definitionScroll} contentContainerStyle={{ paddingBottom: 10 }}>
+                                <Text style={styles.modalDescription}>{wordDefinition}</Text>
+                            </ScrollView>
                             {askCount !== null && askCount >= 2 && (
-                                <Text style={styles.button.askCountText}>
+                                <Text style={styles.askCountText}>
                                     지금까지 {askCount}번 확인했어요!{'\n'}슬슬 익숙해지셨죠?
                                 </Text>
                             )}
@@ -205,12 +212,21 @@ const styles= StyleSheet.create({
         padding: screenwidth*0.06,
         borderRadius: 12,
         width: screenwidth*0.8,
+        height: screenHeight * 0.5,
+        justifyContent: 'flex-start',
     },
+    
     modalTitle: {
         fontSize: screenwidth*0.05,
         fontFamily: 'Ubuntu-Bold',
         marginBottom: 10,
     },
+
+    definitionScroll: {
+    maxHeight: screenHeight * 0.4, // ✅ 설명만 스크롤
+    marginBottom: 10,
+    },
+
     modalDescription: {
         fontSize: screenwidth*0.04,
         fontFamily: 'Ubuntu-Regular',
