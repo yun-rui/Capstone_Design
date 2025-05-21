@@ -53,92 +53,105 @@ export default function QuizPage() {
         }
         } else {
         Alert.alert('⚠️ 퀴즈 생성 실패', data.message || '퀴즈가 없습니다.');
-        router.replace('/SectionPage');
-        }
+        router.replace({
+            pathname: '/SummaryPage',
+            params: {
+                article_id: article_id, 
+            },
+        });         
+    }
     };
 
     const handleSubmit = async () => {
-        if (selectedId === null) {
+    if (selectedId === null) {
         Alert.alert('선택 필요', '하나의 단어를 골라주세요.');
         return;
-        }
+    }
 
-        if (correctId === null) return;
+    if (correctId === null) return;
 
-        const selected = choices.find((c: any) => c.id === selectedId);
-        if (!selected) {
+    const selected = choices.find((c: any) => c.id === selectedId);
+    if (!selected) {
         Alert.alert('에러', '선택한 단어 정보를 찾을 수 없습니다.');
         return;
-        }
+    }
 
+    const correctIndex = choices.findIndex((c: any) => c.id === correctId);
+
+    if (selectedId === correctId) {
+        // ✅ 정답일 경우에만 서버에 제출
         const token = await AsyncStorage.getItem('access_token');
         const res = await fetch('http://172.20.10.2:8000/api/words/quiz/submit/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-            question_word_id: correctId,
-            is_correct: selectedId === correctId,
-        }),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                question_word_id: correctId,
+                is_correct: true,
+            }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-        Alert.alert('제출 실패', data.message || '서버 오류가 발생했습니다.');
-        return;
+            Alert.alert('제출 실패', data.message || '서버 오류가 발생했습니다.');
+            return;
         }
 
-        const correctIndex = choices.findIndex((c: any) => c.id === correctId);
-
-        if (selectedId === correctId) {
-        router.replace('/CorrectAnswer');
-        } else {
         router.replace({
-            pathname: '/WrongAnswer',
+            pathname: '/CorrectAnswer',
             params: {
-            correctWord: correctChoice?.word,
-            correctMeaning: correctChoice?.description,
-            correctIndex: correctIndex + 1,
-            wrongWord: selected.word,
-            wrongMeaning: selected.description,
+                article_id: article_id, 
             },
-        });
-        }
-  };
+        });        
+        } else {
+            // ❌ 오답인 경우는 서버에 제출 없이 바로 WrongAnswer 페이지 이동
+            router.replace({
+                pathname: '/WrongAnswer',
+                params: {
+                    correctWord: correctChoice?.word,
+                    correctMeaning: correctChoice?.description,
+                    correctIndex: correctIndex + 1,
+                    wrongWord: selected.word,
+                    wrongMeaning: selected.description,
+                    article_id: article_id,
+                },
+            });
+        };
+    };
 
-  return (
-    <View style={styles.container}>
-        <DefaultText style={styles.title}>설명을 보고 단어를 맞추세요.</DefaultText>
-        <View style={styles.mainDivider} />
-        <ScrollView style={styles.descriptionBox}>
-            <Text style={styles.question}>{question}</Text>
-        </ScrollView>
+    return (
+        <View style={styles.container}>
+            <DefaultText style={styles.title}>설명을 보고 단어를 맞추세요.</DefaultText>
+            <View style={styles.mainDivider} />
+            <ScrollView style={styles.descriptionBox}>
+                <Text style={styles.question}>{question}</Text>
+            </ScrollView>
 
-        {choices.map((choice: any, idx: number) => (
-            <Pressable
-            key={choice.id}
-            style={styles.optionContainer}
-            onPress={() => setSelectedId(choice.id)}
-            >
-            <View style={[styles.circle, selectedId === choice.id && styles.selectedCircle]}>
-                <Text style={[styles.circleText, selectedId === choice.id && styles.selectedCircleText]}>
-                {idx + 1}
+            {choices.map((choice: any, idx: number) => (
+                <Pressable
+                key={choice.id}
+                style={styles.optionContainer}
+                onPress={() => setSelectedId(choice.id)}
+                >
+                <View style={[styles.circle, selectedId === choice.id && styles.selectedCircle]}>
+                    <Text style={[styles.circleText, selectedId === choice.id && styles.selectedCircleText]}>
+                    {idx + 1}
+                    </Text>
+                </View>
+                <Text style={[styles.optionText, selectedId === choice.id && styles.selectedText]}>
+                    {choice.word}
                 </Text>
-            </View>
-            <Text style={[styles.optionText, selectedId === choice.id && styles.selectedText]}>
-                {choice.word}
-            </Text>
-            </Pressable>
-        ))}
+                </Pressable>
+            ))}
 
-        <Pressable style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitText}>선택</Text>
-        </Pressable>
-    </View>
-  );
+            <Pressable style={styles.submitButton} onPress={handleSubmit}>
+                <Text style={styles.submitText}>선택</Text>
+            </Pressable>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({

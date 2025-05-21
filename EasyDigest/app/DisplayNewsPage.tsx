@@ -32,6 +32,7 @@ export default function DisplayNewsPage(){
     const [modalVisible, setModalVisible] = useState(false);
     const [selection, setSelection] = useState({start:0, end:0});
     const [askCount, setAskCount] = useState<number | null>(null);
+
     
     const handleSelectionChange = (event: any)=>{
         const {start, end} = event.nativeEvent.selection;
@@ -80,7 +81,7 @@ export default function DisplayNewsPage(){
         router.push({
         pathname: '/QuizPage',
         params: { article_id: articleID.toString() }, 
-});
+    });
 
     };
         

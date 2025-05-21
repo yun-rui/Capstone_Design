@@ -47,7 +47,8 @@ export default function MyPage() {
       <View style={styles.mainDivider} />
 
       {/* 프로필 영역 */}
-      <TouchableOpacity style={styles.profileContainer}>
+      <TouchableOpacity style={styles.profileContainer} onPress={() => router.push('/ChangeProfile')}
+>
         <Image source={require('../assets/images/icon.png')} style={styles.profileIcon} />
         <DefaultText style={styles.nickname}>{nickname}</DefaultText>
         <Image source={require('../assets/images/front.png')} style={styles.arrowIcon} />
