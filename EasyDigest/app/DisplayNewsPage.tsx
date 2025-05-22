@@ -61,7 +61,7 @@ export default function DisplayNewsPage(){
 
     if (response.ok){
         const data = await response.json();
-        console.log('백엔드 응답답:',data);
+        console.log('백엔드 응답:',data);
         setWordDefinition(data.description || '설명을 찾을 수 없습니다.');
         setAskCount(data.ask_count); // 횟수 저장 
     } else {
