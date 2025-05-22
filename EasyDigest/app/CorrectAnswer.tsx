@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams  } from 'expo-router';
 import DefaultText from '@/components/DefaultText';
 
 const screenWidth = Dimensions.get('window').width;
@@ -8,14 +8,20 @@ const screenHeight = Dimensions.get('window').height;
 
 export default function CorrectAnswer() {
     const router = useRouter();
+    const { article_id } = useLocalSearchParams();
 
     return (
         <View style={styles.container}>
         <Image source={require('../assets/images/congratulation.png')} style={styles.icon} />
         <DefaultText style={styles.correctText}>정답입니다!</DefaultText>
         <DefaultText style={styles.subText}>지금처럼 열심히 공부해주세요!</DefaultText>
-        <Pressable style={styles.button} onPress={() => router.replace('/SectionPage')}>
-            <Text style={styles.buttonText}>학습 완료</Text>
+        <Pressable style={styles.button}
+            onPress={() => router.replace({
+            pathname: '/SummaryPage',
+            params: { article_id: article_id }, 
+            })}
+        >            
+        <Text style={styles.buttonText}>학습 완료</Text>
         </Pressable>
         </View>
     );

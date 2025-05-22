@@ -22,7 +22,7 @@ export default function WrongAnswer() {
     correctIndex,
     wrongWord,
     wrongMeaning,
-    question,
+    article_id,
   } = useLocalSearchParams();
 
   return (
@@ -63,8 +63,16 @@ export default function WrongAnswer() {
         </ScrollView>
 
         {/* 완료 버튼 */}
-        <Pressable style={styles.button} onPress={() => router.replace('/SectionPage')}>
-            <Text style={styles.buttonText}>학습 완료</Text>
+        <Pressable
+          style={styles.button}
+          onPress={() =>
+            router.replace({
+              pathname: '/SummaryPage',
+              params: { article_id: article_id },
+            })
+          }
+        >            
+          <Text style={styles.buttonText}>학습 완료</Text>
         </Pressable>
     </View>
   );
