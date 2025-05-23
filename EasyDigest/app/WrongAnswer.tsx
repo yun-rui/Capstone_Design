@@ -23,6 +23,7 @@ export default function WrongAnswer() {
     wrongWord,
     wrongMeaning,
     article_id,
+    summary,
   } = useLocalSearchParams();
 
   return (
@@ -68,7 +69,10 @@ export default function WrongAnswer() {
           onPress={() =>
             router.replace({
               pathname: '/SummaryPage',
-              params: { article_id: article_id },
+              params: { 
+                article_id: article_id,
+                summary: summary
+               },
             })
           }
         >            

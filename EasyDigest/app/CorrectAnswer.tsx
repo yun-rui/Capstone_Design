@@ -8,7 +8,7 @@ const screenHeight = Dimensions.get('window').height;
 
 export default function CorrectAnswer() {
     const router = useRouter();
-    const { article_id } = useLocalSearchParams();
+    const { article_id, summary } = useLocalSearchParams();
 
     return (
         <View style={styles.container}>
@@ -17,8 +17,11 @@ export default function CorrectAnswer() {
         <DefaultText style={styles.subText}>지금처럼 열심히 공부해주세요!</DefaultText>
         <Pressable style={styles.button}
             onPress={() => router.replace({
-            pathname: '/SummaryPage',
-            params: { article_id: article_id }, 
+                pathname: '/SummaryPage',
+                params: { 
+                    article_id: article_id,
+                    summary: summary
+                }, 
             })}
         >            
         <Text style={styles.buttonText}>학습 완료</Text>

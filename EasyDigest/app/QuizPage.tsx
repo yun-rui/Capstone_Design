@@ -11,7 +11,7 @@ const screenHeight = Dimensions.get('window').height;
 
 export default function QuizPage() {
     const router = useRouter();
-    const { article_id } = useLocalSearchParams();
+    const { article_id, summary } = useLocalSearchParams();
     console.log("🧪 전달된 article_id:", article_id); 
 
     const [question, setQuestion] = useState('');
@@ -57,6 +57,7 @@ export default function QuizPage() {
             pathname: '/SummaryPage',
             params: {
                 article_id: article_id, 
+                summary: summary,
             },
         });         
     }
@@ -104,6 +105,7 @@ export default function QuizPage() {
             pathname: '/CorrectAnswer',
             params: {
                 article_id: article_id, 
+                summary: summary,
             },
         });        
         } else {
@@ -117,6 +119,7 @@ export default function QuizPage() {
                     wrongWord: selected.word,
                     wrongMeaning: selected.description,
                     article_id: article_id,
+                    summary: summary,
                 },
             });
         };

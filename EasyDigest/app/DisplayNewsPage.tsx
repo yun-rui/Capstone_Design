@@ -13,7 +13,7 @@ const screenHeight = Dimensions.get('window').height;
 
 export default function WebLearnPage() {
   const router = useRouter();
-  const { url, article_id } = useLocalSearchParams();
+  const { url, article_id, summary } = useLocalSearchParams();
   const articleID = Number(article_id);
 
   const [selectedWord, setSelectedWord] = useState('');
@@ -46,7 +46,7 @@ export default function WebLearnPage() {
 
     try {
       const token = await AsyncStorage.getItem('access_token');
-      const response = await fetch('http://172.30.1.73:8000/api/words/learn/', {
+      const response = await fetch('http://172.20.10.2:8000/api/words/learn/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,7 +75,10 @@ export default function WebLearnPage() {
   const handleGoToQuiz = () => {
     router.push({
       pathname: '/QuizPage',
-      params: { article_id: articleID.toString() },
+      params: { 
+        article_id: articleID.toString(),
+        summary: summary,
+       },
     });
   };
 

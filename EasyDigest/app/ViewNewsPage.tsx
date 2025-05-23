@@ -30,7 +30,7 @@ export default function ViewNewsPage() {
         return;
       }
 
-      const response = await fetch('http://172.30.1.73:8000/api/articles/', {
+      const articleRes = await fetch('http://172.20.10.2:8000/api/articles/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,17 +39,32 @@ export default function ViewNewsPage() {
         body: JSON.stringify({ url: currentUrl }),
       });
 
-      if (!response.ok) {
-        const errText = await response.text();
+      if (!articleRes.ok) {
+        const errText = await articleRes.text();
         throw new Error(errText);
       }
 
-      const data = await response.json();
+      const articleData = await articleRes.json();
+      const articleID = articleData.id;
+
+      const summaryRes = await fetch(`http://172.20.10.2:8000/api/articles/${articleID}/generate-summary/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          },
+      });
+      const summaryData = await summaryRes.json();
+      console.log("✅ 요약 생성 결과:", summaryData.summary); // 👈 로그 출력
+
+
       router.push({
         pathname: '/DisplayNewsPage',
         params: {
           url: currentUrl,
-          article_id: data.id.toString(),
+          article_id: articleID.toString(),
+          summary: summaryData.summary, 
+
         },
       });
     } catch (error) {
