@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import {
     View,
@@ -14,6 +15,7 @@ import {
     Alert,
     Text,
     TouchableOpacity,
+    ActivityIndicator,
   } from 'react-native';
   
 import { useRouter } from 'expo-router';
@@ -26,11 +28,10 @@ const screenWidth = Dimensions.get('window').width;
 export default function InputNewsPage() {
   const router = useRouter();
   const [newsText, setNewsText] = useState('');
-
-  // ScrollView에 대한 ref
-  const scrollViewRef = useRef<ScrollView>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    setLoading(true);  //시작 시 로딩 활성화 
     console.log("🟡 handleSubmit 진입");
 
     // post 요청 
@@ -40,10 +41,11 @@ export default function InputNewsPage() {
       
       if (!token){
         Alert.alert('로그인 필요','로그인 정보가 없습니다.');
+        setLoading(false);
         return;
       }
 
-      const response = await fetch('http://172.20.10.13:8000/api/articles/',{
+      const response = await fetch('http://172.30.1.73:8000/api/articles/',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +63,6 @@ export default function InputNewsPage() {
         const status = response.status;
         const errorText = await response.text();
         console.error('서버 상태코드:', status); 
-        //console.error('서버 응답 내용:', errorText);
         throw new Error ('Failed to save article');
       }
 
@@ -74,13 +75,9 @@ export default function InputNewsPage() {
       });
       }catch(error){
         console.error('router.push:', error);
-    }
-  };
-
-  const handleContentSizeChange = () => {
-    // 입력 중 텍스트가 늘어날 때 아래로 스크롤
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: true });
+        Alert.alert("오류",'뉴스 제출 중 오류가 발생하였습니다.');
+    } finally{
+      setLoading(false);  // 종료 시 로딩 비활성화 
     }
   };
 
@@ -117,8 +114,16 @@ export default function InputNewsPage() {
 
             {/* 제출 버튼 */}
             <TouchableOpacity onPress={handleSubmit} style={styles.button} activeOpacity={0.6}>
-            <DefaultText style={styles.buttonText}>입력하기</DefaultText>
+              <DefaultText style={styles.buttonText}>입력하기</DefaultText>
             </TouchableOpacity>
+            
+            {/*로딩 중 안내 */}
+            {loading && (
+              <View style={{marginVertical:20, alignItems: 'center'}}>
+                <Text style={{ fontFamily:'Ubuntu-Regular', marginBottom:10}}>뉴스 처리중..</Text>
+                <ActivityIndicator size="large" color="#1976d2" />
+              </View>
+            )}
           
             
         </View>

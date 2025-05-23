@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
-import { View, Pressable, Alert, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  Alert,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import DefaultText from '@/components/DefaultText';
@@ -9,9 +15,11 @@ const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
 export default function ViewNewsPage() {
-  const { url } = useLocalSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('https://news.naver.com/');
+
+  const webviewRef = useRef(null);
 
   const handleLearn = async () => {
     setLoading(true);
@@ -22,30 +30,30 @@ export default function ViewNewsPage() {
         return;
       }
 
-      const response = await fetch('http://172.20.10.13:8000/api/articles/', {
+      const response = await fetch('http://172.30.1.73:8000/api/articles/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: currentUrl }),
       });
 
       if (!response.ok) {
         const errText = await response.text();
-        console.error('서버 응답 오류:',errText);
-        throw new Error('크롤링 실패');
+        throw new Error(errText);
       }
+
       const data = await response.json();
       router.push({
-        pathname: '/DisplayNewsPage',
+        pathname: '/WebLearnPage',
         params: {
-          content: data.content,
+          url: currentUrl,
           article_id: data.id.toString(),
         },
       });
     } catch (error) {
-      console.error('Error:', error);
+      console.error('기사 크롤링 실패:', error);
       Alert.alert('에러', '기사 크롤링에 실패했습니다.');
     } finally {
       setLoading(false);
@@ -54,9 +62,19 @@ export default function ViewNewsPage() {
 
   return (
     <View style={styles.container}>
-      <WebView source={{ uri: url as string }} style={{ flex: 1 }} />
+      <WebView
+        ref={webviewRef}
+        source={{ uri: 'https://news.naver.com/' }}
+        style={{ flex: 1 }}
+        onNavigationStateChange={(navState) => setCurrentUrl(navState.url)}
+      />
 
-      <TouchableOpacity activeOpacity={0.6} style={styles.learnButton} onPress={handleLearn} disabled={loading}>
+      <TouchableOpacity
+        activeOpacity={0.6}
+        style={styles.learnButton}
+        onPress={handleLearn}
+        disabled={loading}
+      >
         <DefaultText style={styles.learnButtonText}>
           {loading ? '처리 중...' : '이 기사 학습하기'}
         </DefaultText>

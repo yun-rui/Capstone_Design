@@ -1,252 +1,182 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'; // 상단에 추가
-
-// React 17 이상부터는 import할 필요 없음 
-import React, {useState} from 'react'; 
+import React, { useState } from 'react';
 import {
-    View,
-    ScrollView, 
-    Text,
-    StyleSheet,
-    Pressable, 
-    Dimensions,
-    Modal,
-    TextInput,
-    TouchableOpacity, // 단어 설명을 위한 팝업창 
+  View, Text, Alert, Modal, StyleSheet,
+  Dimensions, TouchableOpacity, ScrollView
 } from 'react-native';
-import {
-    useRouter,
-    useLocalSearchParams
-} from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { WebView } from 'react-native-webview';
 import DefaultText from '@/components/DefaultText';
 
+const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
-const screenwidth = Dimensions.get('window').width;
 
-export default function DisplayNewsPage(){
-    const router = useRouter();
-    const {content, article_id} = useLocalSearchParams(); // InputNews에서 넘겨받은 기사 내용 
-    const article = content as string;
-    const articleID = Number(article_id);
+export default function WebLearnPage() {
+  const router = useRouter();
+  const { url, article_id } = useLocalSearchParams();
+  const articleID = Number(article_id);
 
-    const [selectedWord, setSelectedWord] = useState('');
-    const [wordDefinition, setWordDefinition] = useState('');
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selection, setSelection] = useState({start:0, end:0});
-    const [askCount, setAskCount] = useState<number | null>(null);
+  const [selectedWord, setSelectedWord] = useState('');
+  const [wordDefinition, setWordDefinition] = useState('');
+  const [askCount, setAskCount] = useState<number | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-    
-    const handleSelectionChange = (event: any)=>{
-        const {start, end} = event.nativeEvent.selection;
-        const word = article.slice(start, end);
-        setSelection({start, end});
-        setSelectedWord(word);
-        console.log("선택된 단어:", word);
-    };
+  const injectedJS = `
+    document.addEventListener('selectionchange', () => {
+      const selectedText = window.getSelection().toString().trim();
+      if (selectedText.length > 0 && selectedText.length <= 30) {
+        window.ReactNativeWebView.postMessage(selectedText);
+      }
+    });
+    true;
+  `;
 
-    const handleLookup = async () =>{
-        console.log('🟡 handleLookup 진입');
-        if (!selectedWord || !articleID) return;
+  const handleMessage = (event: any) => {
+    const raw = event.nativeEvent.data;
+    const word = raw.replace(/[.,?!()\[\]{}<>‘’“”'"~`·\s]/g, '').trim();
+    if (!word) return;
+    setSelectedWord(word);
+  };
 
-        try{
-            const token = await AsyncStorage.getItem('access_token');
-            const response = await fetch('http://172.20.10.13:8000/api/words/learn/',{
-                method: 'POST',
-                headers:{
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // ✅ 토큰 포함
-                },
-                body: JSON.stringify({
-                    word_text: selectedWord,
-                    article_id: articleID,
-                }),
-            });    
+  const handleLookup = async () => {
+    if (!selectedWord || !articleID) {
+      Alert.alert('알림', '먼저 단어를 선택해주세요.');
+      return;
+    }
 
-    if (response.ok){
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch('http://172.30.1.73:8000/api/words/learn/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          word_text: selectedWord,
+          article_id: articleID,
+        }),
+      });
+
+      if (response.ok) {
         const data = await response.json();
-        console.log('백엔드 응답:',data);
-        setWordDefinition(data.description || '설명을 찾을 수 없습니다.');
-        setAskCount(data.ask_count); // 횟수 저장 
-    } else {
-        setWordDefinition('해당 단어에 대한 설명을 가져오지 못했습니다.');
+        setWordDefinition(data.description || '설명이 없습니다.');
+        setAskCount(data.ask_count);
+      } else {
+        setWordDefinition('단어 설명을 불러오지 못했습니다.');
       }
     } catch (err) {
-      console.error('Error:', err);
       setWordDefinition('오류가 발생했습니다.');
     }
 
     setModalVisible(true);
-    };
+  };
 
-    const handleComplete = () => {
-        // 다음 단계로 넘어가는 로직
-        router.push({
-        pathname: '/QuizPage',
-        params: { article_id: articleID.toString() }, 
+  const handleGoToQuiz = () => {
+    router.push({
+      pathname: '/QuizPage',
+      params: { article_id: articleID.toString() },
     });
+  };
 
-    };
-        
-    return(
-        <View style={styles.container}>
-            {/*상단 고정 버튼*/}
-            <View style={styles.topBar}>
-                <TouchableOpacity style={styles.searchButton} onPress={handleLookup} activeOpacity={0.6}>
-                    <Text style={styles.searchButtonText}>🔍검색</Text>
-                </TouchableOpacity>
-            </View>
-            {/*기사 텍스트 입력창*/}
-                <TextInput
-                    style={styles.textInput}
-                    multiline
-                    editable={false}
-                    value = {article}
-                    onSelectionChange={handleSelectionChange}
-                    selection={selection}
-                    textAlignVertical = "top"
-                />
+  return (
+    <View style={{ flex: 1 }}>
+      <WebView
+        source={{ uri: url as string }}
+        style={{ flex: 1 }}
+        injectedJavaScript={injectedJS}
+        onMessage={handleMessage}
+      />
 
-            <Text style={styles.tipText}>
-                모르는 단어를 드래그해 오른쪽 위 '🔍검색'을 눌러보세요 ! 
-            </Text>
-            <View style={styles.underline}/>
+      {/* 하단 병렬 버튼 영역 */}
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity onPress={handleLookup} style={styles.lookupButton}>
+          <Text style={styles.buttonText}>🔍검색</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleGoToQuiz} style={styles.quizButton}>
+          <Text style={styles.buttonText}>학습 완료</Text>
+        </TouchableOpacity>
+      </View>
 
-            <TouchableOpacity style={styles.button} onPress={handleComplete} activeOpacity={0.6}>
-                <DefaultText style={styles.buttonText}>완료</DefaultText>
+      {/* 단어 설명 모달 */}
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>{selectedWord}</Text>
+            <ScrollView style={styles.definitionScroll}>
+              <Text style={styles.modalText}>{wordDefinition}</Text>
+            </ScrollView>
+            {askCount !== null && askCount >= 2 && (
+              <Text style={styles.askCount}>
+                지금까지 {askCount}번 확인했어요!{'\n'}슬슬 익숙해지셨죠?
+              </Text>
+            )}
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
+              <Text style={styles.closeText}>닫기</Text>
             </TouchableOpacity>
-
-            {/*단어 설명 팝업*/}
-            <Modal
-                visible={modalVisible}
-                transparent
-                animationType="fade"
-                onRequestClose={()=>setModalVisible(false)}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalBox}>
-                            <Text style={styles.modalTitle}>{selectedWord}</Text>
-                            {/* ✅ wordDefinition을 스크롤 가능하게 */}
-                            <ScrollView style={styles.definitionScroll} contentContainerStyle={{ paddingBottom: 10 }}>
-                                <Text style={styles.modalDescription}>{wordDefinition}</Text>
-                            </ScrollView>
-                            {askCount !== null && askCount >= 2 && (
-                                <Text style={styles.askCountText}>
-                                    지금까지 {askCount}번 확인했어요!{'\n'}슬슬 익숙해지셨죠?
-                                </Text>
-                            )}
-
-                            <Pressable onPress={()=> setModalVisible(false)} style={styles.modalButton}>
-                                <Text style={styles.modalButtonText}>닫기</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                </Modal>
+          </View>
         </View>
-    );
+      </Modal>
+    </View>
+  );
 }
 
-const styles= StyleSheet.create({
-    container: {
-        flex:1, 
-        padding: screenwidth*0.05,
-        backgroundColor: 'white',
-    },
-    topBar: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        marginTop: screenHeight*0.06,
-        marginBottom: screenHeight*0.015,
-    },
-    searchButton:{
-        backgroundColor: '#1976d2',
-        paddingVertical: 6,
-        paddingHorizontal: 14,
-        borderRadius: 20,
-    },
-    searchButtonText:{
-        color: 'white',
-        fontSize: screenwidth*0.035,
-        fontFamily: 'Ubuntu-Bold',
-    },
-    textInput: {
-        flex:1,
-        minHeight: screenHeight*0.35,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 10,
-        padding: screenwidth*0.04,
-        fontSize: screenwidth*0.04,
-        fontFamily: 'Ubuntu-Light',
-        color: '#333',
-    },
-    underline:{
-        height:2,
-        width: '90%',
-        backgroundColor: '#1976d2',
-        alignSelf: 'center',
-        marginBottom: screenHeight*0.025,
-    },
-    tipText:{
-        fontSize: screenwidth*0.035,
-        color: '#666',
-        marginTop: screenHeight*0.02,
-        marginBottom: 0,
-        textAlign:'center',
-    },
-    button:{
-        backgroundColor: '#1976d2',
-        paddingVertical: screenHeight*0.018,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: screenwidth*0.045,
-        fontFamily: 'Ubuntu-Bold',
-    },
-    modalOverlay:{
-        flex:1,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalBox:{
-        backgroundColor: 'white',
-        padding: screenwidth*0.06,
-        borderRadius: 12,
-        width: screenwidth*0.8,
-        height: screenHeight * 0.4,
-        justifyContent: 'flex-start',
-    },
-    
-    modalTitle: {
-        fontSize: screenwidth*0.05,
-        fontFamily: 'Ubuntu-Bold',
-        marginBottom: 10,
-    },
-
-    definitionScroll: {
-    maxHeight: screenHeight * 0.3, // ✅ 설명만 스크롤
+const styles = StyleSheet.create({
+  bottomButtons: {
+    flexDirection: 'row',
+    paddingVertical: screenHeight * 0.02,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  lookupButton: {
+    width: '50%',
+    backgroundColor: '#555',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  quizButton: {
+    width: '50%',
+    backgroundColor: '#1976d2',
+    justifyContent:'center',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: screenWidth * 0.045,
+    fontFamily: 'Ubuntu-Bold',
+  },
+  modalOverlay: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalBox: {
+    backgroundColor: 'white',
+    width: screenWidth * 0.8,
+    borderRadius: 12,
+    padding: 16,
+    maxHeight: screenHeight * 0.5,
+  },
+  modalTitle: {
+    fontSize: 18, fontWeight: 'bold', marginBottom: 10,
+  },
+  definitionScroll: {
+    maxHeight: screenHeight * 0.3,
     marginBottom: 10,
-    },
-
-    modalDescription: {
-        fontSize: screenwidth*0.04,
-        fontFamily: 'Ubuntu-Regular',
-        marginBottom: 20,
-    },
-    modalButton: {
-        alignSelf: 'flex-end',
-    },
-    modalButtonText: {
-        color: '#1976d2',
-        fontSize: screenwidth*0.04,
-        fontFamily: 'Ubuntu-Bold',
-    },
-    askCountText: {
-        fontSize: screenwidth*0.035,
-        fontFamily: 'Ubuntu-Regular',
-        color: '#444',
-        textAlign: 'center',
-        marginTop: 10,
-    },
+  },
+  modalText: {
+    fontSize: 16,
+  },
+  askCount: {
+    fontSize: 14, color: '#555', textAlign: 'center',
+    marginTop: 5,
+  },
+  closeBtn: {
+    alignSelf: 'flex-end',
+  },
+  closeText: {
+    color: '#1976d2', fontWeight: 'bold',
+  },
 });
