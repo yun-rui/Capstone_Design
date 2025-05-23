@@ -10,7 +10,8 @@ import {
     Pressable, 
     Dimensions,
     Modal,
-    TextInput, // 단어 설명을 위한 팝업창 
+    TextInput,
+    TouchableOpacity, // 단어 설명을 위한 팝업창 
 } from 'react-native';
 import {
     useRouter,
@@ -48,7 +49,7 @@ export default function DisplayNewsPage(){
 
         try{
             const token = await AsyncStorage.getItem('access_token');
-            const response = await fetch('http://172.20.10.2:8000/api/words/learn/',{
+            const response = await fetch('http://172.20.10.13:8000/api/words/learn/',{
                 method: 'POST',
                 headers:{
                     'Content-Type': 'application/json',
@@ -89,9 +90,9 @@ export default function DisplayNewsPage(){
         <View style={styles.container}>
             {/*상단 고정 버튼*/}
             <View style={styles.topBar}>
-                <Pressable style={styles.searchButton} onPress={handleLookup}>
+                <TouchableOpacity style={styles.searchButton} onPress={handleLookup} activeOpacity={0.6}>
                     <Text style={styles.searchButtonText}>🔍검색</Text>
-                </Pressable>
+                </TouchableOpacity>
             </View>
             {/*기사 텍스트 입력창*/}
                 <TextInput
@@ -109,9 +110,9 @@ export default function DisplayNewsPage(){
             </Text>
             <View style={styles.underline}/>
 
-            <Pressable style={styles.button} onPress={handleComplete}>
+            <TouchableOpacity style={styles.button} onPress={handleComplete} activeOpacity={0.6}>
                 <DefaultText style={styles.buttonText}>완료</DefaultText>
-            </Pressable>
+            </TouchableOpacity>
 
             {/*단어 설명 팝업*/}
             <Modal
@@ -213,7 +214,7 @@ const styles= StyleSheet.create({
         padding: screenwidth*0.06,
         borderRadius: 12,
         width: screenwidth*0.8,
-        height: screenHeight * 0.5,
+        height: screenHeight * 0.4,
         justifyContent: 'flex-start',
     },
     
@@ -224,7 +225,7 @@ const styles= StyleSheet.create({
     },
 
     definitionScroll: {
-    maxHeight: screenHeight * 0.4, // ✅ 설명만 스크롤
+    maxHeight: screenHeight * 0.3, // ✅ 설명만 스크롤
     marginBottom: 10,
     },
 

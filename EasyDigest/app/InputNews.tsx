@@ -13,6 +13,7 @@ import {
     TouchableWithoutFeedback, 
     Alert,
     Text,
+    TouchableOpacity,
   } from 'react-native';
   
 import { useRouter } from 'expo-router';
@@ -42,7 +43,7 @@ export default function InputNewsPage() {
         return;
       }
 
-      const response = await fetch('http://172.20.10.2:8000/api/articles/',{
+      const response = await fetch('http://172.20.10.13:8000/api/articles/',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,22 +58,22 @@ export default function InputNewsPage() {
       });
       
       if (!response.ok) {
+        const status = response.status;
+        const errorText = await response.text();
+        console.error('서버 상태코드:', status); 
+        //console.error('서버 응답 내용:', errorText);
         throw new Error ('Failed to save article');
       }
 
       const data = await response.json();
       console.log('Article saved:',data);
 
-      // DisplayNewsText.tsx로 전달
       router.push({
-      pathname: '/DisplayNewsPage',
-      params: {
-        content: data.content,
-        article_id:data.id.toString(),
-      },
+      pathname: '/ViewNewsPage',
+      params: {url: newsText},
       });
       }catch(error){
-        console.error('Error saving article:',error);
+        console.error('router.push:', error);
     }
   };
 
@@ -115,9 +116,9 @@ export default function InputNewsPage() {
             />
 
             {/* 제출 버튼 */}
-            <Pressable onPress={handleSubmit} style={styles.button}>
+            <TouchableOpacity onPress={handleSubmit} style={styles.button} activeOpacity={0.6}>
             <DefaultText style={styles.buttonText}>입력하기</DefaultText>
-            </Pressable>
+            </TouchableOpacity>
           
             
         </View>
