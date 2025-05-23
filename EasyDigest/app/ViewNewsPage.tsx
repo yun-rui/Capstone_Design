@@ -46,7 +46,7 @@ export default function ViewNewsPage() {
 
       const data = await response.json();
       router.push({
-        pathname: '/WebLearnPage',
+        pathname: '/DisplayNewsPage',
         params: {
           url: currentUrl,
           article_id: data.id.toString(),
