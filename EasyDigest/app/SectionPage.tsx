@@ -40,7 +40,7 @@ export default function SectionPage() {
 
       {/* 학습하러 가기 */}
       <Pressable
-        onPress={() => router.push('/InputNews')}
+        onPress={() => router.push('/ViewNewsPage')}
         style={({ pressed }) => [
           styles.card,
           {
