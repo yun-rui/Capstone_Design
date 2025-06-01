@@ -17,21 +17,51 @@ const screenHeight = Dimensions.get('window').height;
 export default function MyPage() {
   const router = useRouter();
   const [nickname, setNickname] = useState('');
+  // 레벨 구현을 위한 정답 횟수 
+  const [level, setLevel] = useState<number>(0);
+  const [totalCorrectCount, setTotalCorrectCount] = useState<number>(0);
 
   useEffect(() => {
-    const loadNickname = async () => {
-      const saved = await AsyncStorage.getItem('nickname');
-      if (saved) {
-        setNickname(saved);
-      } else {
+    const loadUserData = async() => {
+      const token = await AsyncStorage.getItem('access_token');
+      console.log('token:',token);
+      if (!token){
         Alert.alert('로그인이 필요합니다.', '', [
           { text: '확인', onPress: () => router.replace('/LoginPage') },
         ]);
+        return;
+      }
+      
+      try{
+        const res = await fetch('http://172.20.10.2:8000/api/users/me/',{
+          headers:{
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await res.json();
+        console.log('API response:',data);
+        setNickname(data.nickname || '');
+        console.log('nickname from API:',data.nickname);
+        setTotalCorrectCount(data.total_correct_count || 0);
+        setLevel(data.level || 0);
+      } catch (err){
+        console.error('유저 정보 로딩 실패', err);
       }
     };
-    loadNickname();
+    
+    loadUserData();
   }, []);
-  
+
+  const getLevelImage = (level: number) => {
+    switch (level) {
+      case 0: return require('../assets/images/seed.png');
+      case 1: return require('../assets/images/sprout.png');
+      case 2: return require('../assets/images/pot.png');
+      case 3: return require('../assets/images/flower.png');
+      default: return require('../assets/images/tree.png');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -46,13 +76,17 @@ export default function MyPage() {
       {/* 메인 구분선 */}
       <View style={styles.mainDivider} />
 
-      {/* 프로필 영역 */}
-      <TouchableOpacity style={styles.profileContainer} onPress={() => router.push('/ChangeProfile')}
->
-        <Image source={require('../assets/images/icon.png')} style={styles.profileIcon} />
-        <DefaultText style={styles.nickname}>{nickname}</DefaultText>
+      {/* 프로필 영역 (레벨 이미지 출력으로 변경) */}
+      <TouchableOpacity style={styles.profileContainer} onPress={() => router.push('/ChangeProfile')}>
+        <Image source={getLevelImage(level)} style={styles.profileIcon} />
+        
+        <View style={styles.nameWrapper}>
+          <DefaultText style={styles.nickname}>{nickname || '닉네임 없음'}</DefaultText>
+        </View>
+
         <Image source={require('../assets/images/front.png')} style={styles.arrowIcon} />
       </TouchableOpacity>
+
 
 
       {/* 일반 구분선 */}
@@ -138,5 +172,8 @@ const styles = StyleSheet.create({
     color: '#BCBCBC',
     fontFamily: 'Ubuntu-Regular',
     right: screenWidth*0.24,
+  },
+  nameWrapper: {
+  flex: 1,
   },
 });

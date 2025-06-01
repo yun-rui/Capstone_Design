@@ -19,7 +19,10 @@ export default function ChangeProfile() {
     const [newPassword, setNewPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+    // 레벨 구현
+    const [level, setLevel] = useState(0);
+    const [totalCorrectCount, setTotalCorrectCount] = useState(0);
+  
     useEffect(() => {
         fetchProfile();
     }, []);
@@ -36,10 +39,14 @@ export default function ChangeProfile() {
             setNickname(data.nickname);
             setEmail(data.email);
             setInterest(data.interest);
+            setLevel(data.level || 0);
+            setTotalCorrectCount(data.total_correct_count || 0);
         } else {
             Alert.alert('회원 정보 불러오기 실패');
         }
     };
+
+    const progressPercent = Math.min((totalCorrectCount % 10) * 10, 100);
 
     const handleSubmit = async () => {
         const token = await AsyncStorage.getItem('access_token');
@@ -75,7 +82,7 @@ export default function ChangeProfile() {
             }
 
             // 2. 회원정보 수정
-            const profileRes = await fetch('http://172.20.10.2:8000/api/users/me/update/', {
+            const profileRes = await fetch('http://172.20.10.13:8000/api/users/me/update/', {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -102,6 +109,24 @@ export default function ChangeProfile() {
         }
         };
 
+    const getLevelImage = (level: number) => {
+      switch (level) {
+        case 0: return require('../assets/images/seed.png');
+        case 1: return require('../assets/images/sprout.png');
+        case 2: return require('../assets/images/pot.png');
+        case 3: return require('../assets/images/flower.png');
+        default: return require('../assets/images/tree.png');
+      }
+    };
+    const getLevelName = (level: number) => {
+      switch (level) {
+        case 0: return '씨앗';
+        case 1: return '새싹';
+        case 2: return '화분';
+        case 3: return '꽃';
+        default: return '나무';
+      }
+    };
 
     return (
         <KeyboardAwareScrollView
@@ -115,7 +140,25 @@ export default function ChangeProfile() {
         </TouchableOpacity>
 
         <DefaultText style={styles.title}>회원정보 수정</DefaultText>
-        <Image source={require('../assets/images/icon.png')} style={styles.icon} />
+        {/*레벨 구현*/}
+        <View style={styles.profileSection}>
+          <Image source={getLevelImage(level)} style={styles.levelImage} />
+          <View style={styles.levelInfo}>
+            <DefaultText style={styles.levelText}>{getLevelName(level)}</DefaultText>
+            <View style={styles.progressBar}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${progressPercent}%` },
+                ]}
+              />
+            </View>
+            <DefaultText style={styles.progressLabel}>
+              레벨 진행도: {progressPercent}% ({totalCorrectCount % 10} / 10)
+            </DefaultText>
+          </View>
+        </View>
+
 
         <DefaultText style={styles.label}>이름</DefaultText>
         <TextInput style={styles.input} value={nickname} onChangeText={setNickname} />
@@ -323,6 +366,40 @@ const styles = StyleSheet.create({
       color: 'white',
       fontSize: screenWidth * 0.05,
       fontFamily: 'Ubuntu-Bold',
+    },
+    profileSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: screenHeight * 0.03,
+      gap: screenWidth * 0.06,
+    },
+    levelImage: {
+      width: screenWidth * 0.18,
+      height: screenWidth * 0.18,
+    },
+    levelInfo: {
+      flex: 1,
+    },
+    levelText: {
+      fontSize: screenWidth * 0.05,
+      fontFamily: 'Ubuntu-Bold',
+      marginBottom: 6,
+    },
+    progressBar: {
+      width: '100%',
+      height: 10,
+      backgroundColor: '#eee',
+      borderRadius: 5,
+      overflow: 'hidden',
+      marginBottom: 6,
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: '#1976d2',
+    },
+    progressLabel: {
+      fontSize: screenWidth * 0.035,
+      color: '#555',
     },
   });
   
