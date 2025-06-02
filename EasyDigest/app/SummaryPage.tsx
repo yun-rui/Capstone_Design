@@ -35,29 +35,37 @@ export default function SummaryPage() {
 
     const fetchWords = async () => {
         try {
-        const token = await AsyncStorage.getItem('access_token');
-        const res = await fetch(`http://172.20.10.2:8000/api/words/article/${articleID}`, {
-            method: 'GET',
-            headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            },
-        });
+            const token = await AsyncStorage.getItem('access_token');
+            console.log("🧪 access_token =", token);
 
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error('❌ 서버 응답 오류:', errorText);
-            Alert.alert('단어 로딩 실패', '서버와의 인증에 실패했을 수 있습니다.');
-            return;
-        }
+            const url = `http://172.20.10.2:8000/api/words/article/${articleID}/`;
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            };
 
-        const data = await res.json();
-        setWordList(data);
+            const res = await fetch(url, {
+                method: 'GET',
+                headers: headers,
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error('❌ 서버 응답 오류:', errorText);
+                console.error('❌ 응답 코드:', res.status);
+                Alert.alert('단어 로딩 실패', `서버 오류: ${res.status}`);
+                return;
+            }
+
+
+            const data = await res.json();
+            setWordList(data);
         } catch (err) {
-        console.error('❌ 요청 실패:', err);
-        Alert.alert('에러', '단어 요청 중 문제가 발생했습니다.');
+            console.error('❌ 요청 실패:', err);
+            Alert.alert('에러', '단어 요청 중 문제가 발생했습니다.');
         }
     };
+
 
     const handleComplete = () => {
         router.push('/SectionPage');
