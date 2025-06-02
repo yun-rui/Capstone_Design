@@ -101,18 +101,6 @@ export default function LoginPage() {
           </DefaultText>
         </TouchableOpacity>
 
-        <View style={styles.socialLogin}>
-          <TouchableOpacity style={[styles.socialButton, styles.kakaoButton]}>
-            <Image source={require('../assets/images/kakao_logo.png')} style={styles.socialIcon} />
-            <DefaultText style={styles.kakaoText}>카카오 로그인</DefaultText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.socialButton, styles.naverButton]}>
-            <Image source={require('../assets/images/naver_logo.png')} style={styles.socialIcon} />
-            <DefaultText style={styles.naverText}>네이버 로그인</DefaultText>
-          </TouchableOpacity>
-        </View>
-
         <DefaultText style={styles.footer}>© Copyright. 2025 EasyDigest Co., Ltd.</DefaultText>
       </View>
     </TouchableWithoutFeedback>
@@ -166,43 +154,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Ubuntu-Bold',
     textDecorationLine: 'underline',
     color: '#1976d2',
-  },
-  socialLogin: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: screenHeight * 0.04,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: screenHeight * 0.01,
-    paddingHorizontal: screenWidth * 0.02,
-    marginHorizontal: screenWidth * 0.015,
-    height: screenHeight * 0.04,
-    width: screenWidth * 0.3,
-  },
-  kakaoButton: {
-    backgroundColor: '#fee500',
-  },
-  naverButton: {
-    backgroundColor: '#03c75a',
-  },
-  kakaoText: {
-    fontSize: screenWidth * 0.03,
-    color: '#000000',
-    fontFamily: 'Ubuntu-Bold',
-  },
-  naverText: {
-    fontSize: screenWidth * 0.03,
-    color: '#ffffff',
-    fontFamily: 'Ubuntu-Bold',
-  },
-  socialIcon: {
-    width: screenWidth * 0.05,
-    height: screenWidth * 0.05,
-    marginRight: screenWidth * 0.015,
   },
   footer: {
     position: 'absolute',

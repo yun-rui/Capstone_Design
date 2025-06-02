@@ -82,7 +82,7 @@ export default function ChangeProfile() {
             }
 
             // 2. 회원정보 수정
-            const profileRes = await fetch('http://172.20.10.13:8000/api/users/me/update/', {
+            const profileRes = await fetch('http://172.20.10.2:8000/api/users/me/update/', {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -179,7 +179,7 @@ export default function ChangeProfile() {
         />
 
         <View style={styles.interestsContainer}>
-            {['정치', '경제', '문화', '과학', '연예/스포츠'].map((item) => (
+            {['정치', '경제', '사회', '생활/문화', 'IT/기술'].map((item) => (
             <TouchableOpacity key={item} style={styles.interestButton} onPress={() => setInterest(item)}>
                 <DefaultText style={styles.interestText}>{item}</DefaultText>
             </TouchableOpacity>

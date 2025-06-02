@@ -92,10 +92,17 @@ export default function MyPage() {
       {/* 일반 구분선 */}
       <View style={styles.divider} />
 
-      {/* 학습 기록 */}
-      <TouchableOpacity style={styles.recordContainer}>
-        <DefaultText style={styles.recordText}>MY 학습 기록</DefaultText>
+      {/* MY 학습 기록 */}
+      <TouchableOpacity style={styles.recordContainer} onPress={() => router.push('/StudyRecord')}>
+        <Image source={require('../assets/images/file.png')} style={styles.folderIcon} />
+        
+        <View style={styles.recordWrapper}>
+          <DefaultText style={styles.recordText}>MY 학습</DefaultText>
+        </View>
+
+        <Image source={require('../assets/images/front.png')} style={styles.arrowIcon2} />
       </TouchableOpacity>
+
 
       <View style={styles.divider} />
       <DefaultText style={styles.footer}>© Copyright. 2025 EasyDigest Co., Ltd.</DefaultText>
@@ -126,7 +133,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Ubuntu-Bold',
   },
   mainDivider: {
-    height: screenHeight * 0.006,
+    height: screenHeight * 0.004,
     backgroundColor: '#1976d2',
     width: '100%',
   },
@@ -156,15 +163,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     width: '100%',
   },
+
   recordContainer: {
-    paddingHorizontal: screenWidth * 0.09,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: screenWidth * 0.1,
     paddingVertical: screenHeight * 0.05,
+  },
+  recordWrapper: {
+    flex: 1,
   },
   recordText: {
     fontSize: screenWidth * 0.07,
     fontFamily: 'Ubuntu-Bold',
-    textAlign: 'center',
   },
+  folderIcon: {
+    width: screenWidth * 0.15,
+    height: screenWidth * 0.13,
+    marginRight: screenWidth * 0.1,
+  },
+  arrowIcon2: {
+    width: screenWidth * 0.06,
+    height: screenWidth * 0.06,
+    position: 'absolute',
+    right: screenWidth * 0.1,
+  },
+
   footer: {
     position: 'absolute',
     bottom: screenHeight * 0.06,

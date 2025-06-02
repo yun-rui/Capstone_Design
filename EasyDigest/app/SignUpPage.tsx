@@ -172,7 +172,7 @@ export default function SignUpPage() {
       />
 
       <View style={styles.interestsContainer}>
-        {['정치', '경제', '문화', '과학', '연예/스포츠'].map((item) => (
+        {['정치', '경제', '사회', '생활/문화', 'IT/기술'].map((item) => (
           <TouchableOpacity key={item} style={styles.interestButton} onPress={() => setInterestInput(item)}>
             <DefaultText style={styles.interestText}>{item}</DefaultText>
           </TouchableOpacity>
