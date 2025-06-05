@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import DefaultText from '@/components/DefaultText';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -20,6 +21,7 @@ export default function WebLearnPage() {
   const [wordDefinition, setWordDefinition] = useState('');
   const [askCount, setAskCount] = useState<number | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isLookingUp, setIsLookingUp] = useState(false);
 
   const injectedJS = `
     document.addEventListener('selectionchange', () => {
@@ -44,9 +46,11 @@ export default function WebLearnPage() {
       return;
     }
 
+    setIsLookingUp(true); // 검색 중 시작
+
     try {
       const token = await AsyncStorage.getItem('access_token');
-      const response = await fetch('http://172.20.10.2:8000/api/words/learn/', {
+      const response = await fetch('http://172.20.10.13:8000/api/words/learn/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +73,8 @@ export default function WebLearnPage() {
       setWordDefinition('오류가 발생했습니다.');
     }
 
-    setModalVisible(true);
+    setIsLookingUp(false); // 검색 완료
+    setModalVisible(true); // 단어 모달 표시
   };
 
   const handleGoToQuiz = () => {
@@ -83,7 +88,12 @@ export default function WebLearnPage() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }}>
+      {/*상단 헤더 텍스트 추가 */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>뉴스 학습 중...</Text>
+      </View>
+
       <WebView
         source={{ uri: url as string }}
         style={{ flex: 1 }}
@@ -94,7 +104,9 @@ export default function WebLearnPage() {
       {/* 하단 병렬 버튼 영역 */}
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={handleLookup} style={styles.lookupButton}>
-          <Text style={styles.buttonText}>🔍검색</Text>
+          <Text style={styles.buttonText}>
+            {isLookingUp ? '검색중...': '🔍검색'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleGoToQuiz} style={styles.quizButton}>
           <Text style={styles.buttonText}>학습 완료</Text>
@@ -120,11 +132,24 @@ export default function WebLearnPage() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  header:{
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerText:{
+    fontSize: 22,
+    fontWeight: '300',
+    color: '#333',
+    fontFamily: 'Ubuntu-Bold',
+  },
   bottomButtons: {
     flexDirection: 'row',
     paddingVertical: screenHeight * 0.02,
@@ -163,7 +188,10 @@ const styles = StyleSheet.create({
     maxHeight: screenHeight * 0.5,
   },
   modalTitle: {
-    fontSize: 18, fontWeight: 'bold', marginBottom: 10,
+    fontSize: 26, 
+    fontWeight: 'bold', 
+    marginBottom: 20,
+    textAlign : 'center',
   },
   definitionScroll: {
     maxHeight: screenHeight * 0.3,

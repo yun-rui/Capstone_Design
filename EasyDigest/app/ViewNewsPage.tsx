@@ -5,11 +5,15 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Image,
+  Text,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import DefaultText from '@/components/DefaultText';
+// 상단바 가림 방지 
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -18,7 +22,6 @@ export default function ViewNewsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('https://news.naver.com/');
-
   const webviewRef = useRef(null);
 
   const handleLearn = async () => {
@@ -30,7 +33,7 @@ export default function ViewNewsPage() {
         return;
       }
 
-      const articleRes = await fetch('http://172.20.10.2:8000/api/articles/', {
+      const articleRes = await fetch('http://172.20.10.13:8000/api/articles/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +50,7 @@ export default function ViewNewsPage() {
       const articleData = await articleRes.json();
       const articleID = articleData.id;
 
-      const summaryRes = await fetch(`http://172.20.10.2:8000/api/articles/${articleID}/generate-summary/`, {
+      const summaryRes = await fetch(`http://172.20.10.13:8000/api/articles/${articleID}/generate-summary/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -64,7 +67,6 @@ export default function ViewNewsPage() {
           url: currentUrl,
           article_id: articleID.toString(),
           summary: summaryData.summary, 
-
         },
       });
     } catch (error) {
@@ -76,11 +78,24 @@ export default function ViewNewsPage() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      {/* 상단 Back 버튼 */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() =>router.push('/SectionPage')}>
+          <Image
+            source={require('@/assets/images/back.png')}
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+        <View style={styles.headerCenterWrapper}>
+          <Text style={styles.headerText}>뉴스 탐색</Text>
+        </View>
+      </View>
+      {/*Webview 영역 */}
       <WebView
         ref={webviewRef}
         source={{ uri: 'https://news.naver.com/' }}
-        style={{ flex: 1 }}
+        style={styles.webview}
         onNavigationStateChange={(navState) => setCurrentUrl(navState.url)}
       />
 
@@ -94,12 +109,43 @@ export default function ViewNewsPage() {
           {loading ? '처리 중...' : '이 기사 학습하기'}
         </DefaultText>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#fff' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    backgroundColor: '#f8f8f8',
+    position:'relative',
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+    marginRight: 12,
+  },
+  headerCenterWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    fontSize:22,
+    fontWeight: '600',
+    color: '#333', 
+    fontFamily: 'Ubuntu-Bold',
+  },
+  webview: {
+    height: screenHeight* 0.76,
+    width: '100%',
+  },
   learnButton: {
     backgroundColor: '#1976d2',
     paddingVertical: screenHeight * 0.02,
