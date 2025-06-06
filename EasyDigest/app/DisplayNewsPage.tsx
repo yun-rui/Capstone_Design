@@ -50,7 +50,7 @@ export default function WebLearnPage() {
 
     try {
       const token = await AsyncStorage.getItem('access_token');
-      const response = await fetch('http://172.20.10.13:8000/api/words/learn/', {
+      const response = await fetch('http://172.20.10.2:8000/api/words/learn/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

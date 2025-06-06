@@ -73,16 +73,21 @@ export default function SummaryPage() {
 
     return (
         <View style={styles.container}>
-        <ScrollView style={styles.articleBox}>
-            <Text style={styles.articleText}>
-            {summary}
-            </Text>
-        </ScrollView>
+        <View style={styles.articleBox}>
+        {/* 위쪽 border */}
+            <View style={styles.horizontalLine} />
 
-        <View style={styles.mainDivider} />
+            {/* 텍스트 박스 */}
+            <View style={styles.summaryContainer}>
+                <Text style={styles.articleText}>{String(summary).trimEnd()}</Text>
+            </View>
+
+            {/* 아래쪽 border */}
+            <View style={styles.horizontalLine} />
+        </View>
 
         <View style={styles.termBox}>
-            <ScrollView style={{ maxHeight: screenHeight * 0.3 }}>
+            <ScrollView style={{ maxHeight: screenHeight * 0.4 }}>
             {wordList.map((word, idx) => (
                 <View style={styles.termItem} key={idx}>
                 <View style={styles.row}>
@@ -117,26 +122,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     articleBox: {
-        borderRadius: 12,
-        maxHeight: screenHeight * 0.3,
-        marginTop: screenHeight * 0.12,
-        width: '100%',
+        marginTop: screenHeight * 0.06,
+        marginBottom : screenHeight*0.035,
+    },
+    horizontalLine: {
+        height: screenHeight * 0.002,
+        backgroundColor: '#1976d2',
+        marginVertical: screenHeight * 0.01,
+    },
+    summaryContainer: {
+        paddingVertical: screenHeight * 0.015,   
+        paddingHorizontal: screenWidth*0.02,
     },
     articleText: {
         fontSize: screenWidth * 0.042,
         fontFamily: 'Ubuntu-Regular',
         color: '#000',
     },
-    mainDivider: {
-        height: screenHeight * 0.002,
-        backgroundColor: '#1976d2',
-        width: '100%',
-        top: screenHeight * 0.45,
-        position: 'absolute',
-    },
+
     termBox: {
         width: '100%',
-        marginTop: screenHeight * 0.05,
     },
     termItem: {
         marginBottom: screenHeight * 0.025,

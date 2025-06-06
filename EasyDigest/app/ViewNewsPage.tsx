@@ -33,7 +33,7 @@ export default function ViewNewsPage() {
         return;
       }
 
-      const articleRes = await fetch('http://172.20.10.13:8000/api/articles/', {
+      const articleRes = await fetch('http://172.20.10.2:8000/api/articles/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export default function ViewNewsPage() {
       const articleData = await articleRes.json();
       const articleID = articleData.id;
 
-      const summaryRes = await fetch(`http://172.20.10.13:8000/api/articles/${articleID}/generate-summary/`, {
+      const summaryRes = await fetch(`http://172.20.10.2:8000/api/articles/${articleID}/generate-summary/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

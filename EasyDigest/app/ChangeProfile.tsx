@@ -14,6 +14,7 @@ export default function ChangeProfile() {
     const router = useRouter();
     const [nickname, setNickname] = useState('');
     const [email, setEmail] = useState('');
+    const [originalEmail, setOriginalEmail] = useState(''); 
     const [interest, setInterest] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -38,6 +39,7 @@ export default function ChangeProfile() {
             const data = await res.json();
             setNickname(data.nickname);
             setEmail(data.email);
+            setOriginalEmail(data.email); //
             setInterest(data.interest);
             setLevel(data.level || 0);
             setTotalCorrectCount(data.total_correct_count || 0);
@@ -47,6 +49,36 @@ export default function ChangeProfile() {
     };
 
     const progressPercent = Math.min((totalCorrectCount % 10) * 10, 100);
+
+    const handleCheckDuplicateEmail = async () => {
+      if (email === originalEmail) {
+        Alert.alert('E-mail을 변경하지 않았습니다.');
+        return;
+      }
+
+      if (!email) {
+        Alert.alert('E-mail을 입력하세요.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://172.20.10.2:8000/api/users/check-email/?email=${encodeURIComponent(email)}`, {
+          method: 'GET',
+        });
+
+        const result = await response.json();
+
+        if (result.exists) {
+          Alert.alert('❌ 이미 사용 중인 E-mail입니다.', '다른 E-mail을 입력해주세요.');
+        } else {
+          Alert.alert('✅ 사용 가능한 E-mail입니다.');
+        }
+      } catch (error) {
+        console.error('이메일 중복확인 오류:', error);
+        Alert.alert('서버 오류', '서버에 연결할 수 없습니다.');
+      }
+    };
+
 
     const handleSubmit = async () => {
         const token = await AsyncStorage.getItem('access_token');
@@ -166,8 +198,8 @@ export default function ChangeProfile() {
         <DefaultText style={styles.label}>이메일</DefaultText>
         <View style={styles.inputRow}>
             <TextInput style={styles.input_short} value={email} onChangeText={setEmail} />
-            <TouchableOpacity style={styles.subButton}>
-            <DefaultText style={styles.subButtonText}>인증하기</DefaultText>
+            <TouchableOpacity style={styles.subButton} onPress={handleCheckDuplicateEmail}>
+              <DefaultText style={styles.subButtonText}>중복확인</DefaultText>
             </TouchableOpacity>
         </View>
 

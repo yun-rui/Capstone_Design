@@ -129,9 +129,9 @@ export default function QuizPage() {
         <View style={styles.container}>
             <DefaultText style={styles.title}>설명을 보고 단어를 맞추세요.</DefaultText>
             <View style={styles.mainDivider} />
-            <ScrollView style={styles.descriptionBox}>
-                <Text style={styles.question}>{question}</Text>
-            </ScrollView>
+            <View style={styles.descriptionBox}>
+                <Text style={styles.question}>{String(question).trimEnd()}</Text>
+            </View>
 
             {choices.map((choice: any, idx: number) => (
                 <Pressable
@@ -176,16 +176,19 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     descriptionBox: {
-        maxHeight: screenHeight * 0.2,
         paddingHorizontal: screenWidth * 0.04,
-        paddingVertical: screenHeight * 0.015,
-        borderWidth: 1,
-        borderColor: '#1976d2',
+        paddingVertical: screenHeight * 0.018,
+        backgroundColor: 'white',
         borderRadius: 10,
-        marginVertical: screenHeight * 0.05,
+        elevation: 3, // Android 그림자
+        shadowColor: '#000', // iOS 그림자
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.5,
+        shadowRadius: 3,
+        marginVertical: screenHeight * 0.04,
     },
     question: {
-        fontSize: screenWidth * 0.04,
+        fontSize: screenWidth * 0.045,
         fontFamily: 'Ubuntu-Regular',
     },
     optionContainer: {

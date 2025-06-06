@@ -63,14 +63,14 @@ export default function SignUpPage() {
     }
   };
   
-  const handleCheckDuplicate = async () => {
+  const handleCheckDuplicateUsername = async () => {
     if (!idInput) {
       Alert.alert('아이디를 입력하세요.');
       return;
     }
   
     try {
-      const response = await fetch(`http://172.20.10.2:8000/api/users/check-username/?username=${idInput}`, {
+      const response = await fetch(`http://172.20.10.2:8000/api/users/check-username/?username=${encodeURIComponent(idInput)}`, {
         method: 'GET',
       });
   
@@ -87,6 +87,32 @@ export default function SignUpPage() {
     }
   };  
   
+    
+  const handleCheckDuplicateEmail = async () => {
+    if (!emailInput) {
+      Alert.alert('E-mail을 입력하세요.');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`http://172.20.10.2:8000/api/users/check-email/?email=${encodeURIComponent(emailInput)}`, {
+        method: 'GET',
+      });
+  
+      const result = await response.json();
+  
+      if (result.exists) {
+        Alert.alert('❌ 이미 존재하는 E-mail입니다.', '다른 E-mail을을 입력해주세요.');
+      } else {
+        Alert.alert('✅ 사용 가능한 E-mail입니다.');
+      }
+    } catch (error) {
+      console.error('중복확인 오류:', error);
+      Alert.alert('서버 오류', '서버에 연결할 수 없습니다.');
+    }
+  };  
+  
+
   return (
     <KeyboardAwareScrollView
       contentContainerStyle={styles.container}
@@ -104,7 +130,7 @@ export default function SignUpPage() {
       <DefaultText style={styles.label}>아이디</DefaultText>
       <View style={styles.inputRow}>
         <TextInput style={styles.input_short} value={idInput} onChangeText={setIdInput} />
-        <TouchableOpacity style={styles.subButton} onPress={handleCheckDuplicate}>
+        <TouchableOpacity style={styles.subButton} onPress={handleCheckDuplicateUsername}>
           <DefaultText style={styles.subButtonText}>중복확인</DefaultText>
         </TouchableOpacity>
       </View>
@@ -159,8 +185,8 @@ export default function SignUpPage() {
       <DefaultText style={styles.label}>이메일</DefaultText>
       <View style={styles.inputRow}>
         <TextInput style={styles.input_short} value={emailInput} onChangeText={setEmailInput} />
-        <TouchableOpacity style={styles.subButton}>
-          <DefaultText style={styles.subButtonText}>인증하기</DefaultText>
+        <TouchableOpacity style={styles.subButton} onPress={handleCheckDuplicateEmail}>
+          <DefaultText style={styles.subButtonText}>중복확인</DefaultText>
         </TouchableOpacity>
       </View>
 
