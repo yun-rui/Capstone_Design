@@ -55,10 +55,10 @@ export default function MyPage() {
 
   const getLevelImage = (level: number) => {
     switch (level) {
-      case 0: return require('../assets/images/seed.png');
-      case 1: return require('../assets/images/sprout.png');
-      case 2: return require('../assets/images/pot.png');
-      case 3: return require('../assets/images/flower.png');
+      case 1: return require('../assets/images/seed.png');
+      case 2: return require('../assets/images/sprout.png');
+      case 3: return require('../assets/images/pot.png');
+      case 4: return require('../assets/images/flower.png');
       default: return require('../assets/images/tree.png');
     }
   };

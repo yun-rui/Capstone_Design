@@ -143,19 +143,19 @@ export default function ChangeProfile() {
 
     const getLevelImage = (level: number) => {
       switch (level) {
-        case 0: return require('../assets/images/seed.png');
-        case 1: return require('../assets/images/sprout.png');
-        case 2: return require('../assets/images/pot.png');
-        case 3: return require('../assets/images/flower.png');
+        case 1: return require('../assets/images/seed.png');
+        case 2: return require('../assets/images/sprout.png');
+        case 3: return require('../assets/images/pot.png');
+        case 4: return require('../assets/images/flower.png');
         default: return require('../assets/images/tree.png');
       }
     };
     const getLevelName = (level: number) => {
       switch (level) {
-        case 0: return '씨앗';
-        case 1: return '새싹';
-        case 2: return '화분';
-        case 3: return '꽃';
+        case 1: return '씨앗';
+        case 2: return '새싹';
+        case 3: return '화분';
+        case 4: return '꽃';
         default: return '나무';
       }
     };
